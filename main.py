@@ -1,6 +1,7 @@
 from Measurements.measurements import select_measurements
 from Plotting.plot_data import plot_field, plot_absorbance
 from Plotting.p2p_image import p2p_image
+from Plotting.lineplot import plot_line
 from Plotting.misc_plot_functions import plot_system_stability
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,14 +41,27 @@ def all_plots(point, refs):
 
 
 def main():
-    #"""
-    keywords = ["Coal"]
+    keywords = ["Linescan"]
     refs, sams = select_measurements(keywords, case_sensitive=True, match_exact=True)
-    sams = [sam for sam in sams if sam.position[0] < 50]
-    sams = [sam for sam in sams if sam.position[1] > 5]
+    #sams = [sam for sam in sams if (sam.position[0] < 50)*(sam.position[0] > 1)]
+    #sams = [sam for sam in sams if sam.position[1] > 1]
 
-    p2p_image(refs, sams, point_value="integrated_intensity")
-    #"""
+    #p2p_image(refs, sams, point_value="integrated_intensity")
+    plot_line(refs, sams, point_value="integrated_intensity", label="No paint")
+
+    keywords = ["LinescanPainted200avg"]
+    refs, sams = select_measurements(keywords, case_sensitive=True, match_exact=True)
+    plot_line(refs, sams, point_value="integrated_intensity", label="With paint (200 avg)")
+
+    keywords = ["LinescanPainted"]
+    refs, sams = select_measurements(keywords, case_sensitive=True, match_exact=True)
+    plot_line(refs, sams, point_value="integrated_intensity", label="With paint (100 avg)")
+
+    #point = find_point(sams, x=25, y=19)
+    #print(point.filepath)
+    #plot_field(refs[0].get_data_fd(), label="ref", freq_range=(0, 6))
+    #plot_field(point.get_data_fd(), label=str(point.position), freq_range=(0, 6))
+
     """
     keywords = ["TestPoints"]
     refs, sams = select_measurements(keywords, case_sensitive=True)

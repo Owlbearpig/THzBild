@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 from imports import *
 
 
@@ -13,6 +15,7 @@ def p2p_image(refs, sams, point_value="rel_p2p"):
     unique_x, unique_y = sorted(list(set(x_positions))), sorted(list(set(y_positions)))
 
     rez_x, rez_y = len(unique_x), len(unique_y)
+
     grd_x = np.linspace(bounds[0][0], bounds[0][1], rez_x)
     grd_y = np.linspace(bounds[1][0], bounds[1][1], rez_y)
 
@@ -23,7 +26,6 @@ def p2p_image(refs, sams, point_value="rel_p2p"):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     cbar_label = ""
-
     for i in range(len(sams)):
         matched_ref_idx = np.argmin([np.abs(sams[i].meas_time - ref_i.meas_time) for ref_i in refs])
         matched_ref = refs[matched_ref_idx]
@@ -44,7 +46,7 @@ def p2p_image(refs, sams, point_value="rel_p2p"):
             cbar_label = "$\sum |FFT(y_{sam})| $ / $\sum |FFT(y_{ref})|$"
             edge_val = 0.80
 
-            val = np.sum(np.abs(sam_fd[130:140])) / np.sum(np.abs(ref_fd[130:140]))
+            val = np.sum(np.abs(sam_fd[20:180])) / np.sum(np.abs(ref_fd[20:180]))
         elif "tof" in point_value:  # time of flight
             ax.set_title("ToF (pp_sam - pp_ref) image")
             cbar_label = "$\Delta$t (ps)"
@@ -87,7 +89,11 @@ def p2p_image(refs, sams, point_value="rel_p2p"):
     fig.subplots_adjust(left=0.2)
     extent = [grd_x[0], grd_x[-1], grd_y[0], grd_y[-1]] # correct
     #extent = [grd_x[0], grd_x[-1], grd_y[-1], grd_y[0]]  # flipped y axis
-    aspect = ((bounds[0][1] - bounds[0][0]) / rez_x) / ((bounds[1][1] - bounds[1][0]) / rez_y)
+    y_len = (bounds[1][1] - bounds[1][0])
+    if np.isclose(y_len, 0):
+        y_len = 1
+
+    aspect = ((bounds[0][1] - bounds[0][0]) / rez_x) / (y_len / rez_y)
 
     img = ax.imshow(grid_vals[:, :].transpose((1, 0)), vmin=np.min(grid_vals), vmax=np.max(grid_vals),
                     origin="lower",
