@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 from imports import *
 
@@ -85,6 +86,15 @@ def p2p_image(refs, sams, point_value="rel_p2p"):
         if x_pos > 55:
             val = val
         grid_vals[unique_x.index(x_pos), unique_y.index(y_pos)] = val
+
+    min_val, max_val = np.min(grid_vals), np.max(grid_vals)
+    bins = np.linspace(min_val, max_val, 20)
+
+    new_grid = np.zeros_like(grid_vals.flatten())
+    for i, val in enumerate(grid_vals.flatten()):
+        new_grid[i] = np.argmin(np.abs(bins - val))
+
+    grid_vals = new_grid.reshape(grid_vals.shape)
 
     fig.subplots_adjust(left=0.2)
     extent = [grd_x[0], grd_x[-1], grd_y[0], grd_y[-1]] # correct
