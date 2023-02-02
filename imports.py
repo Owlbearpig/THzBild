@@ -18,7 +18,7 @@ mpl.rcParams['axes.grid'] = True
 mpl.rcParams['figure.autolayout'] = True
 mpl.rcParams['savefig.format'] = 'pdf'
 if 'posix' in cur_os:
-    result_dir = Path(r"/home/alex/MEGA/AG/Projects/THz Conductivity/IPHT/5x5mm_sqrd/results")
+    result_dir = Path(r"/home/alex/MEGA/AG/Projects/Misc/THzBild")
 else:
     result_dir = Path(r"E:\Mega\AG\Projects\THz Conductivity\IPHT\5x5mm_sqrd\results")
 mpl.rcParams["savefig.directory"] = result_dir

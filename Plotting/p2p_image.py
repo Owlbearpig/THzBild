@@ -4,7 +4,7 @@ import numpy as np
 from imports import *
 
 
-def p2p_image(refs, sams, point_value="rel_p2p"):
+def p2p_image(refs, sams, point_value="rel_p2p", ax_title_set=None):
     x_positions = [meas.position[0] for meas in sams]
     y_positions = [meas.position[1] for meas in sams]
 
@@ -27,6 +27,7 @@ def p2p_image(refs, sams, point_value="rel_p2p"):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     cbar_label = ""
+    ax_title = None
     for i in range(len(sams)):
         matched_ref_idx = np.argmin([np.abs(sams[i].meas_time - ref_i.meas_time) for ref_i in refs])
         matched_ref = refs[matched_ref_idx]
@@ -36,31 +37,33 @@ def p2p_image(refs, sams, point_value="rel_p2p"):
         edge_val = 0.785
         # relative peak to peak value
         if "rel_p2p" in point_value:
-            ax.set_title("Relative peak to peak value")
+            ax_title = "Relative peak to peak value"
             cbar_label = r"p2p($y_{sam}$) / p2p($y_{ref}$)"
 
             p2p_val_sam = np.abs(np.max(sam_td_data[:, 1]) - np.min(sam_td_data[:, 1]))
             p2p_val_ref = np.abs(np.max(ref_td_data[:, 1]) - np.min(ref_td_data[:, 1]))
             val = p2p_val_sam / p2p_val_ref
         elif "integrated_intensity" in point_value:
-            ax.set_title("Integrated spectra over 1.3 THz - 1.4 THz")
+            ax_title = "Integrated spectra over 1.3 THz - 1.4 THz"
             cbar_label = "$\sum |FFT(y_{sam})| $ / $\sum |FFT(y_{ref})|$"
             edge_val = 0.80
 
             val = np.sum(np.abs(sam_fd[20:180])) / np.sum(np.abs(ref_fd[20:180]))
         elif "tof" in point_value:  # time of flight
-            ax.set_title("ToF (pp_sam - pp_ref) image")
+            ax_title = "ToF (pp_sam - pp_ref) image"
             cbar_label = "$\Delta$t (ps)"
             edge_val = 0
             argmax_sam = np.argmax(np.abs(sam_td_data[:, 1]))
             argmax_ref = np.argmax(np.abs(ref_td_data[:, 1]))
             val = sam_td_data[argmax_sam, 0] - sam_td_data[argmax_ref, 0]
         elif "pulse_position" in point_value:
+            ax_title = "Pulse position"
             cbar_label = ""
 
             argmax_sam = np.argmax(np.abs(sam_td_data[:, 1]))
             val = sam_td_data[argmax_sam, 0]
         elif "avg_ref_p2p_value" in point_value:
+            ax_title = "avg_ref_p2p_value"
             cbar_label = ""
 
             if sams[i].meas_time < matched_ref.meas_time:
@@ -82,23 +85,32 @@ def p2p_image(refs, sams, point_value="rel_p2p"):
             val = 0
 
         x_pos, y_pos = sams[i].position
-        #y_pos = abs(y_pos - 20) # rotate y around y=10
+        # y_pos = abs(y_pos - 20) # rotate y around y=10
+        if x_pos < 0:
+            x_pos = x_pos + 55
+        else:
+            x_pos = abs(x_pos - max(x_positions)) + min(x_positions)
+
         if x_pos > 55:
             val = val
+
         grid_vals[unique_x.index(x_pos), unique_y.index(y_pos)] = val
 
+    """
     min_val, max_val = np.min(grid_vals), np.max(grid_vals)
-    bins = np.linspace(min_val, max_val, 20)
+    bins = np.linspace(min_val, max_val, 10)
 
     new_grid = np.zeros_like(grid_vals.flatten())
     for i, val in enumerate(grid_vals.flatten()):
         new_grid[i] = np.argmin(np.abs(bins - val))
 
     grid_vals = new_grid.reshape(grid_vals.shape)
+    """
 
     fig.subplots_adjust(left=0.2)
-    extent = [grd_x[0], grd_x[-1], grd_y[0], grd_y[-1]] # correct
-    #extent = [grd_x[0], grd_x[-1], grd_y[-1], grd_y[0]]  # flipped y axis
+    extent = [grd_x[0], grd_x[-1], grd_y[0], grd_y[-1]]  # correct
+    # extent = [grd_x[0], grd_x[-1], grd_y[-1], grd_y[0]]  # flipped y axis
+    #extent = [grd_x[-1], grd_x[0], grd_y[0], grd_y[-1]]  # flipped x axis
     y_len = (bounds[1][1] - bounds[1][0])
     if np.isclose(y_len, 0):
         y_len = 1
@@ -107,10 +119,15 @@ def p2p_image(refs, sams, point_value="rel_p2p"):
 
     img = ax.imshow(grid_vals[:, :].transpose((1, 0)), vmin=np.min(grid_vals), vmax=np.max(grid_vals),
                     origin="lower",
-                    cmap=plt.get_cmap("jet"),
+                    # cmap=plt.get_cmap("jet"),
+                    cmap=plt.get_cmap("coolwarm"),
                     extent=extent,
                     aspect=aspect)
 
+    if ax_title_set is None:
+        ax_title_set = ax_title
+
+    ax.set_title(ax_title_set)
     ax.set_xlabel("Horizontal stage pos. x (mm)")
     ax.set_ylabel("Vertical stage pos. y (mm)")
 

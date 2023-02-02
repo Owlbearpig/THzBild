@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 from imports import *
 
 
-def plot_line(refs, sams, point_value="rel_p2p", freq_sum_range=(1.2, 1.6), label=""):
+def plot_line(refs, sams, point_value="rel_p2p", freq_sum_range=(1.5, 2.0), label=""):
     x_positions = [meas.position[0] for meas in sams]
 
     refs = sorted(refs, key=lambda ref: ref.meas_time)
@@ -34,6 +35,18 @@ def plot_line(refs, sams, point_value="rel_p2p", freq_sum_range=(1.2, 1.6), labe
             freq_slice = slice(int(freq_sum_range[0] * 100), int(freq_sum_range[1] * 100))
             val = np.sum(np.abs(sam_fd[freq_slice])) / np.sum(np.abs(ref_fd[freq_slice]))
             y_vals.append(val)
+        elif "pulse_position" in point_value:
+            ax_title = "Pulse position"
+            cbar_label = ""
+
+            argmax_sam = np.argmax(np.abs(sam_td_data[:, 1]))
+            val = sam_td_data[argmax_sam, 0]
+            y_vals.append(val)
+
+    y_vals.reverse()
+    y_vals = np.array(y_vals)
+
+    #y_vals /= np.max(y_vals)
 
     plt.plot(x_positions, y_vals, label=label)
     plt.xlabel("Horizontal stage pos. x (mm)")

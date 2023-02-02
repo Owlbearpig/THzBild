@@ -41,21 +41,39 @@ def all_plots(point, refs):
 
 
 def main():
-    keywords = ["PencilPainted"]
+    keywords = ["Coal"]
     refs, sams = select_measurements(keywords, case_sensitive=True, match_exact=True)
-    sams = [sam for sam in sams if (sam.position[0] < 50)]
-    #sams = [sam for sam in sams if sam.position[1] > 1]
+    sams = [sam for sam in sams if (sam.position[0] < 55)*(-7 < sam.position[0])]
+    sams = [sam for sam in sams if sam.position[1] > 2]
 
-    p2p_image(refs, sams, point_value="rel_p2p")
-    #plot_line(refs, sams, point_value="integrated_intensity", label="No paint")
+    p2p_image(refs, sams, point_value="rel_p2p", ax_title_set="Coal with paint")
     plt.show()
 
-    point_H = find_point(sams, x=45, y=21)
-    point_paint = find_point(sams, x=36, y=12)
+    keywords = ["Linescan"]
+    refs, sams = select_measurements(keywords, case_sensitive=True, match_exact=True)
+    plot_line(refs, sams, point_value="integrated_intensity", label="No paint")
 
-    plot_field(refs[0].get_data_fd(), label="ref", freq_range=(0, 6))
-    plot_field(point_H.get_data_fd(), label=str(point_H.position), freq_range=(0, 6))
-    plot_field(point_paint.get_data_fd(), label=str(point_paint.position), freq_range=(0, 6))
+    keywords = ["LinescanPainted"]
+    refs, sams = select_measurements(keywords, case_sensitive=True, match_exact=True)
+    plot_line(refs, sams, point_value="integrated_intensity", label="With paint")
+
+    plt.vlines([10, 21], ymin=0, ymax=1, colors="Red")
+    plt.vlines([21.1, 40], ymin=0, ymax=1, colors="Black")
+    plt.vlines([41, 56], ymin=0, ymax=1, colors="Blue")
+    plt.text(14, 0.9, "Paper", color="Red")
+    plt.text(27, 0.9, "Coal pen", color="Black")
+    plt.text(47, 0.9, "Pencil", color="Blue")
+    plt.legend()
+    plt.show()
+
+    paper = find_point(sams, x=15, y=21)
+    coal = find_point(sams, x=25, y=12)
+    pencil = find_point(sams, x=50, y=12)
+
+    plot_field(refs[0].get_data_fd(), label="Ref", freq_range=(0, 5))
+    plot_field(paper.get_data_fd(), label=f"Paper (x={paper.position[0]} mm)", freq_range=(0, 5))
+    plot_field(coal.get_data_fd(), label=f"Coal (x={coal.position[0]} mm)", freq_range=(0, 5))
+    plot_field(pencil.get_data_fd(), label=f"Pencil (x={pencil.position[0]} mm)", freq_range=(0, 5))
 
     """
     keywords = ["TestPoints"]
